@@ -26,9 +26,11 @@ try:
     geometry_file_name = "geometry_"
     geometry_file_name += output_file_name
     geometry_file = file(geometry_file_name, "w")
+    geometry_file.write("<solids> \n")
     position_file_name = "position_"
     position_file_name += output_file_name
     position_file = file(position_file_name, "w")
+    position_file.write("<define>\n")
     position_file.write("<constant name=\"HALFPI\" value=\"pi/2.\"/> \n")
     position_file.write("<position name=\"center\" x=\"0\" y=\"0\" z=\"0\"/> \n")
     position_file.write("<rotation name=\"identity\" x=\"0\" y=\"0\" z=\"0\" /> \n")
@@ -57,6 +59,7 @@ cursorObject        = connectionObject.cursor()
 # Create a table in the in-memory database
 createTable = "CREATE TABLE material(id int, Name varchar(32), Formula varchar(32), Z int, A real, Density real)"
 cursorObject.execute(createTable)
+#Create a table for the materials needed in the file
 createTable = "CREATE TABLE material_infile(id int, Name varchar(32), Formula varchar(32), Z int, A real, Density real, towrite int)"
 cursorObject.execute(createTable)
 #Creating table for list of regions in order
@@ -103,6 +106,54 @@ for line in material_list:
     continue
 
 
+#Now insert in the file and in the database some of the materials defined by default in FLUKA
+#AIR
+material_file.write("<material name=\"mat_AIR\"/>\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n <D value=\".00122210\" />\n</material>")
+#Add AIR to the material list already in the file to not be written and the elements to be written
+insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"AIR\",\"\",\"\",\"\",\"\",0)"    
+cursorObject.execute(insertValues)
+mat_file_id +=1
+mat_list_air = ['CARBON','NITROGEN','OXYGEN','ARGON']
+for mat_name in mat_list_air:
+    query_str = "SELECT * FROM material_infile where Name='" + str(mat_name) + "'"
+    cursorObject.execute(query_str)
+    record = cursorObject.fetchone()
+    #if not present I look for it in the other database and add it.
+    if record == None:
+        query_str = "SELECT * FROM material where Name='" + str(mat_name) + "'"
+        cursorObject.execute(query_str)
+        record2 = cursorObject.fetchone()
+        if record2 == None:
+            print "!!!!!!!!!!! MATERIAL " + str(mat_name) + " NOT PRESENT IN THE DATABASE, PLEASE ADD"
+        else:
+            insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"" + record2[1] + "\",\"" + record2[2] + "\"," + str(record2[3]) + "," + str(record2[4]) + "," + str(record2[5]) + ",1)"
+            cursorObject.execute(insertValues)
+            mat_file_id +=1
+    pass
+
+
+#VACUUM
+# I am assuming that the composition is like air, but the density is 1.608e-12*g/cm3 (same as air, but with pressure of 1e-6 torr). Chapter 8 https://hallaweb.jlab.org/github/halla-osp/version/Standard-Equipment-Manual.pdf  
+material_file.write("<material name=\"mat_VACUUM\"/>\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n <D value=\"1.608E-12\" />\n</material>")
+#Add VACUUM to the material list already in the file to not be written; the elements are the same as air
+insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"VACUUM\",\"\",\"\",\"\",\"\",0)"    
+cursorObject.execute(insertValues)
+mat_file_id += 1
+
+
+#BLACKHOLE
+#Here I just need to define whatever material with density > 0.
+#The material BLACKHOLE will neet to be hardcoded in the geant4 software, so that when this material is hit, the tracking is stopped. For now the material will be based on Argon, since I already have it defined before
+material_file.write("<material name=\"mat_BLCKHOLE\"/>\n <fraction n=\"1.0\" ref=\"el_ARGON\" />\n  <D value=\"1.0\" />\n</material>")
+#Add BLACKHOLE to the material list already in the file to not be written; the elements are the same as air
+insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"BLCKHOLE\",\"\",\"\",\"\",\"\",0)"    
+cursorObject.execute(insertValues)
+mat_file_id += 1
+
+print "!!!!!!! YOU MUST DEFINE THE MATERIAL WITH THE PROPERTY BLCKHOLE IN YOUR CODE !!!!!\n"
+
+
+
 RPP_lenght=8
 SPH_lenght=6
 RCC_lenght=9
@@ -134,6 +185,8 @@ geometry_file.write(str(5*maxL))
 geometry_file.write("\" z=\"")
 geometry_file.write(str(5*maxL))
 geometry_file.write("\" lunit= \"cm\"/>\n")
+
+
 
 
 def import_material(line):
@@ -248,7 +301,7 @@ def import_material(line):
         # I can write an element
         material_file.write("<element name=\"el_")
         material_file.write(mat_name)
-        material_file.write("\" Z=\"")
+        material_file.write("\" formula=\"\" Z=\"")
         material_file.write(str(mat_Z))
         material_file.write("\"> <atom value=\"")
         material_file.write(str(mat_A))
@@ -286,7 +339,7 @@ def import_assigma(line):
         #in this case, just a single volume is assigned
         geometry_file.write("<volume name=\"vol_")
         geometry_file.write(vol_name)
-        geometry_file.write("\"> \n  <materialref ref=\"")
+        geometry_file.write("\"> \n  <materialref ref=\"mat_")
         geometry_file.write(mat_name)
         geometry_file.write("\"/> \n  <solidref ref=\"")
         geometry_file.write(vol_name)
@@ -1870,6 +1923,10 @@ for i in range(at_region2):
 # We need to parse again the input file, since material can be defined after the region is called
 input_file.seek(0)
 
+#Finished to write geometry part, now I need to assign volumes and physical volumes
+geometry_file.write("</solids> \n")
+geometry_file.write("<structure> \n")
+
 #Now associate region to material and place it
 for line in input_file:
     
@@ -1896,6 +1953,15 @@ if records != None:
         material_file.write(" <D value=\"")
         material_file.write(str(record[5]))
         material_file.write("\" /> </material> \n")
+        material_file.write("<element name=\"el_")
+        material_file.write(str(record[1]))
+        material_file.write("\" formula=\"")
+        material_file.write(str(record[2]))
+        material_file.write("\" Z=\"")
+        material_file.write(str(record[3]))
+        material_file.write("\"> <atom value=\"")
+        material_file.write(str(record[4]))
+        material_file.write("\" /> </element> \n")
 
 
 #Now go trough the list of regions and write down the placement of physical volumes.
@@ -1910,6 +1976,11 @@ if records != None:
         geometry_file.write("\"/> \n  <positionref ref=\"center\"/> \n  <rotationref ref=\"identity\"/> \n </physvol> \n") 
 
 
+#Close the files
+position_file.write("</define> \n")
+material_file.write("</materials> \n")
+geometry_file.write("</structure> \n")
+        
 geometry_file.close()
 position_file.close()
 material_file.close()
