@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+<!DOCTYPE gdml [
+<!ENTITY positions SYSTEM “position_output.gdml”>
+]>
+
+<!DOCTYPE gdml [
+<!ENTITY materials SYSTEM “material_output.gdml”>
+]>
+
+<!DOCTYPE gdml [
+<!ENTITY geometry SYSTEM “geometry_output.gdml”>
+]>
+
+&positions
+
+&materials
+
+&geometry
+
+</gdml>

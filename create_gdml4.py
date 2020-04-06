@@ -1989,8 +1989,8 @@ position_file.write("</define> \n")
 material_file.write("</materials> \n")
 geometry_file.write("</structure> \n")
 
-geometry_file.write("<setup name=\"Default\" version=\"1.0\"> \n"
-geometry_file.write("  <world ref=\"vol_BoxMother\"/> \n"
+geometry_file.write("<setup name=\"Default\" version=\"1.0\"> \n")
+geometry_file.write("  <world ref=\"vol_BoxMother\"/> \n")
 geometry_file.write("</setup> \n")
         
 geometry_file.close()
