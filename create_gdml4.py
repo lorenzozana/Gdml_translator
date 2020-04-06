@@ -486,7 +486,7 @@ def importRPP(line):
     RPP_lenght = 8
     RPP_this = int(len(line.split()))
     name = line.split()[1]
-    geometry_file.write("<para name=\"")
+    geometry_file.write("<box name=\"")
     geometry_file.write(name)
     xmin = float(line.split()[2])
     xmax = float(line.split()[3])
@@ -500,7 +500,7 @@ def importRPP(line):
     zmax = float(line.split()[7])
     geometry_file.write("\" z=\"")
     geometry_file.write(str(zmax-zmin))
-    geometry_file.write("\" alpha=\"1\" theta=\"1\"  phi=\"1\" aunit=\"rad\" lunit=\"cm\"/>\n")
+    geometry_file.write("\" lunit=\"cm\"/>\n")
     
     position_file.write("<position name=\"pos_");
     position_file.write(name);
@@ -534,7 +534,7 @@ def importRPPlong(line1,line2):
     for x in range(len(line2.split())):
             value[int(RPP_this + x)]= line2.split()[int(x)]
     name = value[1]
-    geometry_file.write("<para name=\"")
+    geometry_file.write("<box name=\"")
     geometry_file.write(name)
     xmin = float(value[2])
     xmax = float(value[3])
@@ -548,7 +548,7 @@ def importRPPlong(line1,line2):
     zmax = float(value[7])
     geometry_file.write("\" z=\"")
     geometry_file.write(str(zmax-zmin))
-    geometry_file.write("\" alpha=\"1\" theta=\"1\"  phi=\"1\" aunit=\"rad\" lunit=\"cm\"/>\n")
+    geometry_file.write("\" lunit=\"cm\"/>\n")
 
     position_file.write("<position name=\"pos_");
     position_file.write(name);
