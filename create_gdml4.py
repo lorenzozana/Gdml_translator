@@ -108,7 +108,7 @@ for line in material_list:
 
 #Now insert in the file and in the database some of the materials defined by default in FLUKA
 #AIR
-material_file.write("<material name=\"mat_AIR\"/>\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n <D value=\".00122210\" />\n</material>")
+material_file.write("<material name=\"mat_AIR\">\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n <D value=\".00122210\" />\n</material>")
 #Add AIR to the material list already in the file to not be written and the elements to be written
 insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"AIR\",\"\",\"\",\"\",\"\",0)"    
 cursorObject.execute(insertValues)
@@ -134,7 +134,7 @@ for mat_name in mat_list_air:
 
 #VACUUM
 # I am assuming that the composition is like air, but the density is 1.608e-12*g/cm3 (same as air, but with pressure of 1e-6 torr). Chapter 8 https://hallaweb.jlab.org/github/halla-osp/version/Standard-Equipment-Manual.pdf  
-material_file.write("<material name=\"mat_VACUUM\"/>\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n <D value=\"1.608E-12\" />\n</material>")
+material_file.write("<material name=\"mat_VACUUM\">\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n <D value=\"1.608E-12\" />\n</material>")
 #Add VACUUM to the material list already in the file to not be written; the elements are the same as air
 insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"VACUUM\",\"\",\"\",\"\",\"\",0)"    
 cursorObject.execute(insertValues)
@@ -144,7 +144,7 @@ mat_file_id += 1
 #BLACKHOLE
 #Here I just need to define whatever material with density > 0.
 #The material BLACKHOLE will neet to be hardcoded in the geant4 software, so that when this material is hit, the tracking is stopped. For now the material will be based on Argon, since I already have it defined before
-material_file.write("<material name=\"mat_BLCKHOLE\"/>\n <fraction n=\"1.0\" ref=\"el_ARGON\" />\n  <D value=\"1.0\" />\n</material>")
+material_file.write("<material name=\"mat_BLCKHOLE\">\n <fraction n=\"1.0\" ref=\"el_ARGON\" />\n  <D value=\"1.0\" />\n</material>")
 #Add BLACKHOLE to the material list already in the file to not be written; the elements are the same as air
 insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"BLCKHOLE\",\"\",\"\",\"\",\"\",0)"    
 cursorObject.execute(insertValues)
@@ -184,7 +184,7 @@ geometry_file.write("\" y=\"")
 geometry_file.write(str(5*maxL))
 geometry_file.write("\" z=\"")
 geometry_file.write(str(5*maxL))
-geometry_file.write("\" lunit= \"cm\"/>\n")
+geometry_file.write("\" lunit=\"cm\"/>\n")
 
 
 
@@ -235,8 +235,10 @@ def import_material(line):
         mat_A = float(record[4])
         material_file.write("\"> <atom value=\"")
         material_file.write(str(mat_A))
-    material_file.write("\"/>")
+    if mat_Z > 0.0 or mat_A > 0.0:    
+        material_file.write("\"/>")
     if mat_A == 0.0 and mat_Z == 0.0:
+        material_file.write("\">")
         i_mat = 0
         mat_amount = []
         mat_kind = []
@@ -374,7 +376,7 @@ def import_assigma(line):
         for record in records:
             geometry_file.write("<volume name=\"vol_")
             geometry_file.write(str(record[1]))
-            geometry_file.write("\"> \n  <materialref ref=\"")
+            geometry_file.write("\"> \n  <materialref ref=\"mat_")
             geometry_file.write(mat_name)
             geometry_file.write("\"/> \n  <solidref ref=\"")
             geometry_file.write(str(record[1]))
@@ -488,17 +490,17 @@ def importRPP(line):
     geometry_file.write(name)
     xmin = float(line.split()[2])
     xmax = float(line.split()[3])
-    geometry_file.write("\"x=\"")
+    geometry_file.write("\" x=\"")
     geometry_file.write(str(xmax-xmin))
     ymin = float(line.split()[4])
     ymax = float(line.split()[5])
-    geometry_file.write("\"y=\"")
+    geometry_file.write("\" y=\"")
     geometry_file.write(str(ymax-ymin))
     zmin = float(line.split()[6])
     zmax = float(line.split()[7])
-    geometry_file.write("\"z=\"")
+    geometry_file.write("\" z=\"")
     geometry_file.write(str(zmax-zmin))
-    geometry_file.write("\"alpha=\"1\" theta=\"1\"  phi=\"1\"aunit=\"rad\"lunit= \"cm\"/>\n")
+    geometry_file.write("\" alpha=\"1\" theta=\"1\"  phi=\"1\" aunit=\"rad\" lunit=\"cm\"/>\n")
     
     position_file.write("<position name=\"pos_");
     position_file.write(name);
@@ -536,17 +538,17 @@ def importRPPlong(line1,line2):
     geometry_file.write(name)
     xmin = float(value[2])
     xmax = float(value[3])
-    geometry_file.write("\"x=\"")
+    geometry_file.write("\" x=\"")
     geometry_file.write(str(xmax-xmin))
     ymin = float(value[4])
     ymax = float(value[5])
-    geometry_file.write("\"y=\"")
+    geometry_file.write("\" y=\"")
     geometry_file.write(str(ymax-ymin))
     zmin = float(value[6])
     zmax = float(value[7])
-    geometry_file.write("\"z=\"")
+    geometry_file.write("\" z=\"")
     geometry_file.write(str(zmax-zmin))
-    geometry_file.write("\"alpha=\"1\" theta=\"1\"  phi=\"1\" aunit=\"rad\" lunit= \"cm\"/>\n")
+    geometry_file.write("\" alpha=\"1\" theta=\"1\"  phi=\"1\" aunit=\"rad\" lunit=\"cm\"/>\n")
 
     position_file.write("<position name=\"pos_");
     position_file.write(name);
@@ -572,11 +574,11 @@ def importSPH(line):
     name = line.split()[1]
     geometry_file.write("<sphere name=\"")
     geometry_file.write(name)
-    geometry_file.write("\"rmin=\"0\"")
+    geometry_file.write("\" rmin=\"0\"")
     rmax = float(line.split()[5])
-    geometry_file.write(" \"rmax=\"")
+    geometry_file.write(" rmax=\"")
     geometry_file.write(str(rmax))
-    geometry_file.write("\" deltatheta=\"1\"  deltaphi=\"1\" aunit=\"rad\" lunit= \"cm\"/>\n")
+    geometry_file.write("\" deltatheta=\"180\"  deltaphi=\"360\" aunit=\"deg\" lunit=\"cm\"/>\n")
     xval = float(line.split()[2])
     yval = float(line.split()[3])
     zval = float(line.split()[4])
@@ -613,12 +615,12 @@ def importRCC(line):
     hzval = float(line.split()[7])
     geometry_file.write("<tube name=\"")
     geometry_file.write(name)
-    geometry_file.write("\"rmin=\"0.0\" rmax=\"")
+    geometry_file.write("\" rmin=\"0.0\" rmax=\"")
     geometry_file.write(str(rmax))
     if hzval != 0.0 and hxval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hzval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -641,7 +643,7 @@ def importRCC(line):
     elif hxval != 0.0 and hzval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hxval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -663,7 +665,7 @@ def importRCC(line):
     elif hyval != 0.0 and hzval==0.0 and hxval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hyval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -715,7 +717,7 @@ def importRCClong(line1,line2):
     if hzval != 0.0 and hxval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hzval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -737,7 +739,7 @@ def importRCClong(line1,line2):
     elif hxval != 0.0 and hzval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hxval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -759,7 +761,7 @@ def importRCClong(line1,line2):
     elif hyval != 0.0 and hzval==0.0 and hxval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hyval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -803,7 +805,7 @@ def importTRC(line):
     if hzval != 0.0 and hxval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hzval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -825,7 +827,7 @@ def importTRC(line):
     elif hxval != 0.0 and hzval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hxval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -847,7 +849,7 @@ def importTRC(line):
     elif hyval != 0.0 and hzval==0.0 and hxval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hyval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -902,7 +904,7 @@ def importTRClong(line1,line2):
     if hzval != 0.0 and hxval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hzval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -924,7 +926,7 @@ def importTRClong(line1,line2):
     elif hxval != 0.0 and hzval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hxval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -946,7 +948,7 @@ def importTRClong(line1,line2):
     elif hyval != 0.0 and hzval==0.0 and hxval==0.0:
         geometry_file.write("\" z=\"")
         geometry_file.write(str(hyval))
-        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit= \"cm\"/> \n")
+        geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
         position_file.write("\" x=\"")
@@ -1012,7 +1014,7 @@ def importELL(line):
         geometry_file.write(str(val_b))
         geometry_file.write("\" az=\"")
         geometry_file.write(str(val_a))
-        geometry_file.write("\" lunit= \"cm\"/> \n")
+        geometry_file.write("\" lunit=\"cm\"/> \n")
     elif (fz2-fz1) == 0.0 and (fx2-fx1)!=0.0 and (fy2-fy1)==0.0:
         geometry_file.write("\" ax=\"")
         geometry_file.write(str(val_a))
@@ -1020,7 +1022,7 @@ def importELL(line):
         geometry_file.write(str(val_b))
         geometry_file.write("\" az=\"")
         geometry_file.write(str(val_b))
-        geometry_file.write("\" lunit= \"cm\"/> \n")
+        geometry_file.write("\" lunit=\"cm\"/> \n")
     elif (fz2-fz1) == 0.0 and (fx2-fx1)==0.0 and (fy2-fy1)!=0.0:
         geometry_file.write("\" ax=\"")
         geometry_file.write(str(val_b))
@@ -1028,7 +1030,7 @@ def importELL(line):
         geometry_file.write(str(val_a))
         geometry_file.write("\" az=\"")
         geometry_file.write(str(val_b))
-        geometry_file.write("\" lunit= \"cm\"/> \n")
+        geometry_file.write("\" lunit=\"cm\"/> \n")
     else:
         print("SORRY, ELL not in an axis dimension not yet implemented")
     pass
@@ -1084,7 +1086,7 @@ def importELLlong(line1,line2):
         geometry_file.write(str(val_b))
         geometry_file.write("\" az=\"")
         geometry_file.write(str(val_a))
-        geometry_file.write("\" lunit= \"cm\"/> \n")
+        geometry_file.write("\" lunit=\"cm\"/> \n")
     elif (fz2-fz1) == 0.0 and (fx2-fx1)!=0.0 and (fy2-fy1)==0.0:
         geometry_file.write("\" ax=\"")
         geometry_file.write(str(val_a))
@@ -1092,7 +1094,7 @@ def importELLlong(line1,line2):
         geometry_file.write(str(val_b))
         geometry_file.write("\" az=\"")
         geometry_file.write(str(val_b))
-        geometry_file.write("\" lunit= \"cm\"/> \n")
+        geometry_file.write("\" lunit=\"cm\"/> \n")
     elif (fz2-fz1) == 0.0 and (fx2-fx1)==0.0 and (fy2-fy1)!=0.0:
         geometry_file.write("\" ax=\"")
         geometry_file.write(str(val_b))
@@ -1100,7 +1102,7 @@ def importELLlong(line1,line2):
         geometry_file.write(str(val_a))
         geometry_file.write("\" az=\"")
         geometry_file.write(str(val_b))
-        geometry_file.write("\" lunit= \"cm\"/> \n")
+        geometry_file.write("\" lunit=\"cm\"/> \n")
     else:
         print("SORRY, ELL not in an axis dimension not yet implemented")
     pass
@@ -1116,7 +1118,7 @@ def importXYP(line):
     geometry_file.write("\" z=\"")
     geometry_file.write(str(maxL))
     side = float(line.split()[2])
-    geometry_file.write("\" lunit= \"cm\"/>\n")
+    geometry_file.write("\" lunit=\"cm\"/>\n")
     position_file.write("<position name=\"pos_");
     position_file.write(name);
     position_file.write("\" x=\"0.0\" y=\"0.0\" z=\"")
@@ -1143,7 +1145,7 @@ def importXZP(line):
     geometry_file.write("\" z=\"")
     geometry_file.write(str(maxL))
     side = float(line.split()[2])
-    geometry_file.write("\" lunit= \"cm\"/>\n")
+    geometry_file.write("\" lunit=\"cm\"/>\n")
     position_file.write("<position name=\"pos_");
     position_file.write(name);
     position_file.write("\" x=\"0.0\" z=\"0.0\" y=\"")
@@ -1170,7 +1172,7 @@ def importYZP(line):
     geometry_file.write("\" z=\"")
     geometry_file.write(str(maxL))
     side = float(line.split()[2])
-    geometry_file.write("\" lunit= \"cm\"/>\n")
+    geometry_file.write("\" lunit=\"cm\"/>\n")
     position_file.write("<position name=\"pos_");
     position_file.write(name);
     position_file.write("\" z=\"0.0\" y=\"0.0\" x=\"")
@@ -1198,7 +1200,7 @@ def importXCC(line):
     geometry_file.write(str(Rval))
     geometry_file.write("\" z=\"")
     geometry_file.write(str(maxL))
-    geometry_file.write("\" deltaphi=\"360\" startphi=\"0.0\" aunit=\"deg\" lunit= \"cm\"/>\n")
+    geometry_file.write("\" deltaphi=\"360\" startphi=\"0.0\" aunit=\"deg\" lunit=\"cm\"/>\n")
     position_file.write("<position name=\"pos_");
     position_file.write(name);
     position_file.write("\" x=\"0.0\" y=\"")
@@ -1228,7 +1230,7 @@ def importYCC(line):
     geometry_file.write(str(Rval))
     geometry_file.write("\" z=\"")
     geometry_file.write(str(maxL))
-    geometry_file.write("\" deltaphi=\"360\" startphi=\"0.0\" aunit=\"deg\" lunit= \"cm\"/>\n")
+    geometry_file.write("\" deltaphi=\"360\" startphi=\"0.0\" aunit=\"deg\" lunit=\"cm\"/>\n")
     position_file.write("<position name=\"pos_");
     position_file.write(name);
     position_file.write("\" y=\"0.0\" x=\"")
@@ -1257,7 +1259,7 @@ def importZCC(line):
     geometry_file.write(str(Rval))
     geometry_file.write("\" z=\"")
     geometry_file.write(str(maxL))
-    geometry_file.write("\" deltaphi=\"360\" startphi=\"0.0\" aunit=\"deg\" lunit= \"cm\"/>\n")
+    geometry_file.write("\" deltaphi=\"360\" startphi=\"0.0\" aunit=\"deg\" lunit=\"cm\"/>\n")
     position_file.write("<position name=\"pos_");
     position_file.write(name);
     position_file.write("\" x=\"")
@@ -1493,9 +1495,9 @@ for i in range(at_region2):
         print str(i) + " " +  str(j) + " " + rvalue[i,j]
         if j==0:
             # I assume here that the first volume is called with a +
-            geometry_file.write("<intersection name =\"")
+            geometry_file.write("<intersection name=\"")
             geometry_file.write(rvalue[i,0])
-            geometry_file.write("0_0\"/> \n")
+            geometry_file.write("_0_0\"> \n")
             geometry_file.write("<first ref=\"BoxMother\"/> \n")
             geometry_file.write("<second ref=\"")
             bodyname = rvalue[i,1].replace("+","")
@@ -1517,13 +1519,13 @@ for i in range(at_region2):
         if j>1:
 
             if rvalue[i,j].startswith("-") and len(rvalue[i,j]) > 2 :
-                geometry_file.write("<subtraction name =\"")
+                geometry_file.write("<subtraction name=\"")
                 geometry_file.write(rvalue[i,0])
                 geometry_file.write("_")
                 geometry_file.write(str(subreg_n))
                 geometry_file.write("_")
                 geometry_file.write(str(reg_n))
-                geometry_file.write("\"/> \n")
+                geometry_file.write("\"> \n")
                 geometry_file.write("<first ref=\"")
                 geometry_file.write(rvalue[i,0])
                 geometry_file.write("_")
@@ -1546,13 +1548,13 @@ for i in range(at_region2):
                 geometry_file.write("</subtraction> \n")
                 reg_n +=1
             elif rvalue[i,j].startswith("+") and len(rvalue[i,j]) > 2 :
-                geometry_file.write("<intersection name =\"")
+                geometry_file.write("<intersection name=\"")
                 geometry_file.write(rvalue[i,0])
                 geometry_file.write("_")
                 geometry_file.write(str(subreg_n))
                 geometry_file.write("_")
                 geometry_file.write(str(reg_n))
-                geometry_file.write("\"/> \n")
+                geometry_file.write("\"> \n")
                 geometry_file.write("<first ref=\"")
                 geometry_file.write(rvalue[i,0])
                 geometry_file.write("_")
@@ -1575,13 +1577,13 @@ for i in range(at_region2):
                 geometry_file.write("</intersection> \n")
                 reg_n +=1
             elif rvalue[i,j].startswith("|") and len(rvalue[i,j]) > 2 :
-                geometry_file.write("<union name =\"")
+                geometry_file.write("<union name=\"")
                 geometry_file.write(rvalue[i,0])
                 geometry_file.write("_")
                 geometry_file.write(str(subreg_n))
                 geometry_file.write("_")
                 geometry_file.write(str(reg_n))
-                geometry_file.write("\"/> \n")
+                geometry_file.write("\"> \n")
                 geometry_file.write("<first ref=\"")
                 geometry_file.write(rvalue[i,0])
                 geometry_file.write("_")
@@ -1609,11 +1611,11 @@ for i in range(at_region2):
                 print "subreg n" + str(subreg_n) + " volumes = " + str(reg_n)
                 subreg_n += 1
                 reg_n = 0
-                geometry_file.write("<intersection name =\"")
+                geometry_file.write("<intersection name=\"")
                 geometry_file.write(rvalue[i,0])
                 geometry_file.write("_")
                 geometry_file.write(str(subreg_n))
-                geometry_file.write("_0\"/> \n")
+                geometry_file.write("_0\"> \n")
                 geometry_file.write("<first ref=\"BoxMother\"/> \n")
                 geometry_file.write("<second ref=\"")
                 bodyname = rvalue[i,j+1].replace("+","")
@@ -1634,7 +1636,7 @@ for i in range(at_region2):
                 parent_op = rvalue[i,j][0]
                 print "Parenthesis open \n"
                 j += 1
-                geometry_file.write("<intersection name =\"")
+                geometry_file.write("<intersection name=\"")
                 geometry_file.write(rvalue[i,0])
                 geometry_file.write("_")
                 geometry_file.write(str(subreg_n))
@@ -1642,7 +1644,7 @@ for i in range(at_region2):
                 geometry_file.write(str(reg_n))
                 geometry_file.write("_")
                 geometry_file.write(str(parent_n))
-                geometry_file.write("\"/> \n")
+                geometry_file.write("\"> \n")
                 geometry_file.write("<first ref=\"BoxMother\"/> \n")
                 geometry_file.write("<second ref=\"")
                 bodyname = rvalue[i,j].replace("+","")
@@ -1661,7 +1663,7 @@ for i in range(at_region2):
                 j += 1
                 while rvalue[i,j] != ")" :
                     if rvalue[i,j].startswith("-") and len(rvalue[i,j]) > 2 :
-                        geometry_file.write("<subtraction name =\"")
+                        geometry_file.write("<subtraction name=\"")
                         geometry_file.write(rvalue[i,0])
                         geometry_file.write("_")
                         geometry_file.write(str(subreg_n))
@@ -1669,7 +1671,7 @@ for i in range(at_region2):
                         geometry_file.write(str(reg_n))
                         geometry_file.write("_")
                         geometry_file.write(str(parent_n))
-                        geometry_file.write("\"/> \n")
+                        geometry_file.write("\"> \n")
                         geometry_file.write("<first ref=\"")
                         geometry_file.write(rvalue[i,0])
                         geometry_file.write("_")
@@ -1695,7 +1697,7 @@ for i in range(at_region2):
                         parent_n +=1
                         j +=1
                     elif rvalue[i,j].startswith("+") and len(rvalue[i,j]) > 2 :
-                        geometry_file.write("<intersection name =\"")
+                        geometry_file.write("<intersection name=\"")
                         geometry_file.write(rvalue[i,0])
                         geometry_file.write("_")
                         geometry_file.write(str(subreg_n))
@@ -1703,7 +1705,7 @@ for i in range(at_region2):
                         geometry_file.write(str(reg_n))
                         geometry_file.write("_")
                         geometry_file.write(str(parent_n))
-                        geometry_file.write("\"/> \n")
+                        geometry_file.write("\"> \n")
                         geometry_file.write("<first ref=\"")
                         geometry_file.write(rvalue[i,0])
                         geometry_file.write("_")
@@ -1729,7 +1731,7 @@ for i in range(at_region2):
                         parent_n +=1
                         j +=1
                     elif rvalue[i,j].startswith("|") and len(rvalue[i,j]) > 2 :
-                        geometry_file.write("<union name =\"")
+                        geometry_file.write("<union name=\"")
                         geometry_file.write(rvalue[i,0])
                         geometry_file.write("_")
                         geometry_file.write(str(subreg_n))
@@ -1737,7 +1739,7 @@ for i in range(at_region2):
                         geometry_file.write(str(reg_n))
                         geometry_file.write("_")
                         geometry_file.write(str(parent_n))
-                        geometry_file.write("\"/> \n")
+                        geometry_file.write("\"> \n")
                         geometry_file.write("<first ref=\"")
                         geometry_file.write(rvalue[i,0])
                         geometry_file.write("_")
@@ -1765,13 +1767,13 @@ for i in range(at_region2):
                     pass
                 print "found end parenthesis \n"
                 if parent_op == "+" :
-                    geometry_file.write("<intersection name =\"")
+                    geometry_file.write("<intersection name=\"")
                     geometry_file.write(rvalue[i,0])
                     geometry_file.write("_")
                     geometry_file.write(str(subreg_n))
                     geometry_file.write("_")
                     geometry_file.write(str(reg_n))
-                    geometry_file.write("\"/> \n")
+                    geometry_file.write("\"> \n")
                     geometry_file.write("<first ref=\"")
                     geometry_file.write(rvalue[i,0])
                     geometry_file.write("_")
@@ -1797,13 +1799,13 @@ for i in range(at_region2):
                     geometry_file.write("</intersection> \n")
                     reg_n +=1
                 elif parent_op == "-" : 
-                    geometry_file.write("<subtraction name =\"")
+                    geometry_file.write("<subtraction name=\"")
                     geometry_file.write(rvalue[i,0])
                     geometry_file.write("_")
                     geometry_file.write(str(subreg_n))
                     geometry_file.write("_")
                     geometry_file.write(str(reg_n))
-                    geometry_file.write("\"/> \n")
+                    geometry_file.write("\"> \n")
                     geometry_file.write("<first ref=\"")
                     geometry_file.write(rvalue[i,0])
                     geometry_file.write("_")
@@ -1830,13 +1832,13 @@ for i in range(at_region2):
                     reg_n +=1
 
                 elif parent_op == "|" :
-                    geometry_file.write("<union name =\"")
+                    geometry_file.write("<union name=\"")
                     geometry_file.write(rvalue[i,0])
                     geometry_file.write("_")
                     geometry_file.write(str(subreg_n))
                     geometry_file.write("_")
                     geometry_file.write(str(reg_n))
-                    geometry_file.write("\"/> \n")
+                    geometry_file.write("\"> \n")
                     geometry_file.write("<first ref=\"")
                     geometry_file.write(rvalue[i,0])
                     geometry_file.write("_")
@@ -1873,11 +1875,11 @@ for i in range(at_region2):
             # Here I should reconstruct all the subregions since the array is finished
             reg_n_at_subreg[int(subreg_n)] = reg_n
             print "subreg n" + str(subreg_n) + " volumes = " + str(reg_n)
-            geometry_file.write("<intersection name =\"")
+            geometry_file.write("<intersection name=\"")
             geometry_file.write(rvalue[i,0])
             geometry_file.write("_")
             geometry_file.write(str(subreg_n))
-            geometry_file.write("\"/> \n")
+            geometry_file.write("\"> \n")
             geometry_file.write("<first ref=\"BoxMother\"/> \n")
             geometry_file.write("<second ref=\"")
             geometry_file.write(rvalue[i,0])
@@ -1894,11 +1896,11 @@ for i in range(at_region2):
             
             if (subreg_n > 0) : 
                 for k in range(1,subreg_n+1):
-                    geometry_file.write("<union name =\"")
+                    geometry_file.write("<union name=\"")
                     geometry_file.write(rvalue[i,0])
                     geometry_file.write("_")
                     geometry_file.write(str(subreg_n - k))
-                    geometry_file.write("\"/> \n")
+                    geometry_file.write("\"> \n")
                     geometry_file.write("<first ref=\"")
                     geometry_file.write(rvalue[i,0])
                     geometry_file.write("_")
@@ -1927,13 +1929,6 @@ input_file.seek(0)
 geometry_file.write("</solids> \n")
 geometry_file.write("<structure> \n")
 
-geometry_file.write("<volume name=\"vol_")
-geometry_file.write("BoxMother")
-geometry_file.write("\"> \n  <materialref ref=\"mat_")
-geometry_file.write("BLCKHOLE")
-geometry_file.write("\"/> \n  <solidref ref=\"")
-geometry_file.write("BoxMother")
-geometry_file.write("\"/> \n </volume> \n")
 
 #Now associate region to material and place it
 for line in input_file:
@@ -1958,9 +1953,9 @@ if records != None:
         material_file.write(str(record[3]))
         material_file.write("\"> <atom value=\"")
         material_file.write(str(record[4]))
-        material_file.write(" <D value=\"")
+        material_file.write("\"/> <D value=\"")
         material_file.write(str(record[5]))
-        material_file.write("\" /> </material> \n")
+        material_file.write("\"/>  </material> \n")
         material_file.write("<element name=\"el_")
         material_file.write(str(record[1]))
         material_file.write("\" formula=\"")
@@ -1969,7 +1964,7 @@ if records != None:
         material_file.write(str(record[3]))
         material_file.write("\"> <atom value=\"")
         material_file.write(str(record[4]))
-        material_file.write("\" /> </element> \n")
+        material_file.write("\"/> </element> \n")
 
 
 #Now go trough the list of regions and write down the placement of physical volumes.
@@ -1977,12 +1972,22 @@ if records != None:
 query_str = "SELECT * FROM region_list"
 cursorObject.execute(query_str)
 records = cursorObject.fetchall()
+geometry_file.write("<volume name=\"vol_")
+geometry_file.write("BoxMother")
+geometry_file.write("\"> \n  <materialref ref=\"mat_")
+geometry_file.write("BLCKHOLE")
+geometry_file.write("\"/> \n  <solidref ref=\"")
+geometry_file.write("BoxMother")
+geometry_file.write("\"/> \n")
+
 if records != None:
     for record in records:
         geometry_file.write("<physvol> \n  <volumeref ref=\"vol_")
         geometry_file.write(str(record[1]))
         geometry_file.write("\"/> \n  <positionref ref=\"center\"/> \n  <rotationref ref=\"identity\"/> \n </physvol> \n") 
 
+
+geometry_file.write("</volume> \n")
 
 #Close the files
 position_file.write("</define> \n")
@@ -1998,3 +2003,29 @@ position_file.close()
 material_file.close()
 
 connectionObject.close()
+
+
+#now create output file with full geometry
+
+data1 = data2 = data3 = ""
+
+with open(position_file_name) as fileout:
+    data1 = fileout.read()
+
+with open(material_file_name) as fileout:
+    data2 = fileout.read()
+
+data1 += "\n \n"
+data1 += data2
+
+with open(geometry_file_name) as fileout:
+    data3 = fileout.read()
+
+data1 += "\n \n"
+data1 += data3
+
+with open ('output.gdml','w') as fileout:
+    fileout.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?> \n <gdml xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd\"> \n \n")
+    fileout.write(data1)
+    fileout.write("\n \n </gdml> \n")
+
