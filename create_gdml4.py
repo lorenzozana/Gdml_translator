@@ -1927,6 +1927,14 @@ input_file.seek(0)
 geometry_file.write("</solids> \n")
 geometry_file.write("<structure> \n")
 
+geometry_file.write("<volume name=\"vol_")
+geometry_file.write("BoxMother")
+geometry_file.write("\"> \n  <materialref ref=\"mat_")
+geometry_file.write("BLCKHOLE")
+geometry_file.write("\"/> \n  <solidref ref=\"")
+geometry_file.write("BoxMother")
+geometry_file.write("\"/> \n </volume> \n")
+
 #Now associate region to material and place it
 for line in input_file:
     
@@ -1980,6 +1988,10 @@ if records != None:
 position_file.write("</define> \n")
 material_file.write("</materials> \n")
 geometry_file.write("</structure> \n")
+
+geometry_file.write("<setup name=\"Default\" version=\"1.0\"> \n"
+geometry_file.write("  <world ref=\"vol_BoxMother\"/> \n"
+geometry_file.write("</setup> \n")
         
 geometry_file.close()
 position_file.close()
