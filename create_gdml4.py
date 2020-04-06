@@ -4,7 +4,7 @@ import os, sys, math, sqlite3
 
 # Get the input lhe file
 if len(sys.argv) < 2:
-    print "\nYou must enter the .lhe file you wish to convert as the first arguement. Exiting \n"
+    print "\nYou must enter the FLUKA input file you wish to convert as the first arguement. Exiting \n"
     sys.exit(1)
 
 try:    
@@ -13,7 +13,7 @@ try:
     material_list = file("material_list.txt", 'r')
 
 except:
-    print "\nThe entered file cannot be opened, please enter a vaild .lhe file. Exiting. \n"
+    print "\nThe entered file cannot be opened, please enter a vaild FLUKA input file. Exiting. \n"
     sys.exit(1)
     pass
 
