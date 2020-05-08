@@ -108,7 +108,7 @@ for line in material_list:
 
 #Now insert in the file and in the database some of the materials defined by default in FLUKA
 #AIR
-material_file.write("<material name=\"mat_AIR\">\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n <D value=\".00122210\" />\n</material>")
+material_file.write("<material name=\"mat_AIR\">\n <D value=\".00122210\" />\n  <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n </material>")
 #Add AIR to the material list already in the file to not be written and the elements to be written
 insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"AIR\",\"\",\"\",\"\",\"\",0)"    
 cursorObject.execute(insertValues)
@@ -134,7 +134,7 @@ for mat_name in mat_list_air:
 
 #VACUUM
 # I am assuming that the composition is like air, but the density is 1.608e-12*g/cm3 (same as air, but with pressure of 1e-6 torr). Chapter 8 https://hallaweb.jlab.org/github/halla-osp/version/Standard-Equipment-Manual.pdf  
-material_file.write("<material name=\"mat_VACUUM\">\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n <D value=\"1.608E-12\" />\n</material>")
+material_file.write("<material name=\"mat_VACUUM\">\n <D value=\"1.608E-12\" />\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n </material>")
 #Add VACUUM to the material list already in the file to not be written; the elements are the same as air
 insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"VACUUM\",\"\",\"\",\"\",\"\",0)"    
 cursorObject.execute(insertValues)
@@ -144,7 +144,7 @@ mat_file_id += 1
 #BLACKHOLE
 #Here I just need to define whatever material with density > 0.
 #The material BLACKHOLE will neet to be hardcoded in the geant4 software, so that when this material is hit, the tracking is stopped. For now the material will be based on Argon, since I already have it defined before
-material_file.write("<material name=\"mat_BLCKHOLE\">\n <fraction n=\"1.0\" ref=\"el_ARGON\" />\n  <D value=\"1.0\" />\n</material>")
+material_file.write("<material name=\"mat_BLCKHOLE\">\n  <D value=\"1.0\" />\n <fraction n=\"1.0\" ref=\"el_ARGON\" />\n </material>")
 #Add BLACKHOLE to the material list already in the file to not be written; the elements are the same as air
 insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"BLCKHOLE\",\"\",\"\",\"\",\"\",0)"    
 cursorObject.execute(insertValues)
@@ -225,7 +225,9 @@ def import_material(line):
         material_file.write("\" Z=\"")
         material_file.write(str(mat_Z))
     if mat_A > 0.0:
-        material_file.write("\"> <atom value=\"")
+        material_file.write("\"> <D value=\"")
+        material_file.write(str(mat_Density))
+        material_file.write("\" /> <atom value=\"")
         material_file.write(str(mat_A))
     if mat_Z > 0.0 and mat_A == 0.0:
         #I need to get the value from the database. I am going to filter with mat_Z, since the name can be different
@@ -233,12 +235,17 @@ def import_material(line):
         cursorObject.execute(query_str)
         record = cursorObject.fetchone()
         mat_A = float(record[4])
-        material_file.write("\"> <atom value=\"")
+        material_file.write("\"> <D value=\"")
+        material_file.write(str(mat_Density))
+        material_file.write("\" /> <atom value=\"")
         material_file.write(str(mat_A))
     if mat_Z > 0.0 or mat_A > 0.0:    
         material_file.write("\"/>")
     if mat_A == 0.0 and mat_Z == 0.0:
         material_file.write("\">")
+        material_file.write(" <D value=\"")
+        material_file.write(str(mat_Density))
+        material_file.write("\" /> \n")
         i_mat = 0
         mat_amount = []
         mat_kind = []
@@ -282,7 +289,7 @@ def import_material(line):
             if mat_amount[i] > 0.0:
                 # by atoms
                 material_file.write("<composite n=\"")
-                material_file.write(str(mat_amount[i]))
+                material_file.write(str(int(mat_amount[i])))
                 material_file.write("\" ref=\"el_")
                 material_file.write(str(mat_kind[i]))
                 material_file.write("\" /> \n")
@@ -296,9 +303,8 @@ def import_material(line):
             i += 1
     string_rot.seek(0)
     pass
-    material_file.write(" <D value=\"")
-    material_file.write(str(mat_Density))
-    material_file.write("\" /> </material> \n")
+
+    material_file.write("</material> \n")
     if mat_A != 0.0 and mat_Z != 0.0:
         # I can write an element
         material_file.write("<element name=\"el_")
@@ -1503,13 +1509,13 @@ for i in range(at_region2):
             bodyname = rvalue[i,1].replace("+","")
             geometry_file.write(bodyname)
             geometry_file.write("\"/> \n")
-            geometry_file.write("<rotationref ref=\"")
-            rotname = rvalue[i,1].replace("+","rot_")
-            geometry_file.write(rotname)
-            geometry_file.write("\"/> \n")
             geometry_file.write("<positionref ref=\"")
             posname = rvalue[i,1].replace("+","pos_")
             geometry_file.write(posname)
+            geometry_file.write("\"/> \n")
+            geometry_file.write("<rotationref ref=\"")
+            rotname = rvalue[i,1].replace("+","rot_")
+            geometry_file.write(rotname)
             geometry_file.write("\"/> \n")
             geometry_file.write("</intersection> \n")
             j=1
@@ -1537,13 +1543,13 @@ for i in range(at_region2):
                 bodyname = rvalue[i,j].replace("-","")
                 geometry_file.write(bodyname)
                 geometry_file.write("\"/> \n")
-                geometry_file.write("<rotationref ref=\"")
-                rotname = rvalue[i,j].replace("-","rot_")
-                geometry_file.write(rotname)
-                geometry_file.write("\"/> \n")
                 geometry_file.write("<positionref ref=\"")
                 posname = rvalue[i,j].replace("-","pos_")
                 geometry_file.write(posname)
+                geometry_file.write("\"/> \n")
+                geometry_file.write("<rotationref ref=\"")
+                rotname = rvalue[i,j].replace("-","rot_")
+                geometry_file.write(rotname)
                 geometry_file.write("\"/> \n")
                 geometry_file.write("</subtraction> \n")
                 reg_n +=1
@@ -1566,13 +1572,13 @@ for i in range(at_region2):
                 bodyname = rvalue[i,j].replace("+","")
                 geometry_file.write(bodyname)
                 geometry_file.write("\"/> \n")
-                geometry_file.write("<rotationref ref=\"")
-                rotname = rvalue[i,j].replace("+","rot_")
-                geometry_file.write(rotname)
-                geometry_file.write("\"/> \n")
                 geometry_file.write("<positionref ref=\"")
                 posname = rvalue[i,j].replace("+","pos_")
                 geometry_file.write(posname)
+                geometry_file.write("\"/> \n")
+                geometry_file.write("<rotationref ref=\"")
+                rotname = rvalue[i,j].replace("+","rot_")
+                geometry_file.write(rotname)
                 geometry_file.write("\"/> \n")
                 geometry_file.write("</intersection> \n")
                 reg_n +=1
@@ -1595,13 +1601,13 @@ for i in range(at_region2):
                 bodyname = rvalue[i,j].replace("|","")
                 geometry_file.write(bodyname)
                 geometry_file.write("\"/> \n")
-                geometry_file.write("<rotationref ref=\"")
-                rotname = rvalue[i,j].replace("|","rot_")
-                geometry_file.write(rotname)
-                geometry_file.write("\"/> \n")
                 geometry_file.write("<positionref ref=\"")
                 posname = rvalue[i,j].replace("|","pos_")
                 geometry_file.write(posname)
+                geometry_file.write("\"/> \n")
+                geometry_file.write("<rotationref ref=\"")
+                rotname = rvalue[i,j].replace("|","rot_")
+                geometry_file.write(rotname)
                 geometry_file.write("\"/> \n")
                 geometry_file.write("</union> \n")
                 reg_n +=1
@@ -1621,13 +1627,13 @@ for i in range(at_region2):
                 bodyname = rvalue[i,j+1].replace("+","")
                 geometry_file.write(bodyname)
                 geometry_file.write("\"/> \n")
-                geometry_file.write("<rotationref ref=\"")
-                rotname = rvalue[i,j+1].replace("+","rot_")
-                geometry_file.write(rotname)
-                geometry_file.write("\"/> \n")
                 geometry_file.write("<positionref ref=\"")
                 posname = rvalue[i,j+1].replace("+","pos_")
                 geometry_file.write(posname)
+                geometry_file.write("\"/> \n")
+                geometry_file.write("<rotationref ref=\"")
+                rotname = rvalue[i,j+1].replace("+","rot_")
+                geometry_file.write(rotname)
                 geometry_file.write("\"/> \n")
                 geometry_file.write("</intersection> \n")
                 j += 1
@@ -1650,13 +1656,13 @@ for i in range(at_region2):
                 bodyname = rvalue[i,j].replace("+","")
                 geometry_file.write(bodyname)
                 geometry_file.write("\"/> \n")
-                geometry_file.write("<rotationref ref=\"")
-                rotname = rvalue[i,j].replace("+","rot_")
-                geometry_file.write(rotname)
-                geometry_file.write("\"/> \n")
                 geometry_file.write("<positionref ref=\"")
                 posname = rvalue[i,j].replace("+","pos_")
                 geometry_file.write(posname)
+                geometry_file.write("\"/> \n")
+                geometry_file.write("<rotationref ref=\"")
+                rotname = rvalue[i,j].replace("+","rot_")
+                geometry_file.write(rotname)
                 geometry_file.write("\"/> \n")
                 geometry_file.write("</intersection> \n")
                 parent_n += 1
@@ -1685,13 +1691,13 @@ for i in range(at_region2):
                         bodyname = rvalue[i,j].replace("-","")
                         geometry_file.write(bodyname)
                         geometry_file.write("\"/> \n")
-                        geometry_file.write("<rotationref ref=\"")
-                        rotname = rvalue[i,j].replace("-","rot_")
-                        geometry_file.write(rotname)
-                        geometry_file.write("\"/> \n")
                         geometry_file.write("<positionref ref=\"")
                         posname = rvalue[i,j].replace("-","pos_")
                         geometry_file.write(posname)
+                        geometry_file.write("\"/> \n")
+                        geometry_file.write("<rotationref ref=\"")
+                        rotname = rvalue[i,j].replace("-","rot_")
+                        geometry_file.write(rotname)
                         geometry_file.write("\"/> \n")
                         geometry_file.write("</subtraction> \n")
                         parent_n +=1
@@ -1719,13 +1725,13 @@ for i in range(at_region2):
                         bodyname = rvalue[i,j].replace("+","")
                         geometry_file.write(bodyname)
                         geometry_file.write("\"/> \n")
-                        geometry_file.write("<rotationref ref=\"")
-                        rotname = rvalue[i,j].replace("+","rot_")
-                        geometry_file.write(rotname)
-                        geometry_file.write("\"/> \n")
                         geometry_file.write("<positionref ref=\"")
                         posname = rvalue[i,j].replace("+","pos_")
                         geometry_file.write(posname)
+                        geometry_file.write("\"/> \n")
+                        geometry_file.write("<rotationref ref=\"")
+                        rotname = rvalue[i,j].replace("+","rot_")
+                        geometry_file.write(rotname)
                         geometry_file.write("\"/> \n")
                         geometry_file.write("</intersection> \n")
                         parent_n +=1
@@ -1753,13 +1759,13 @@ for i in range(at_region2):
                         bodyname = rvalue[i,j].replace("|","")
                         geometry_file.write(bodyname)
                         geometry_file.write("\"/> \n")
-                        geometry_file.write("<rotationref ref=\"")
-                        rotname = rvalue[i,j].replace("|","rot_")
-                        geometry_file.write(rotname)
-                        geometry_file.write("\"/> \n")
                         geometry_file.write("<positionref ref=\"")
                         posname = rvalue[i,j].replace("|","pos_")
                         geometry_file.write(posname)
+                        geometry_file.write("\"/> \n")
+                        geometry_file.write("<rotationref ref=\"")
+                        rotname = rvalue[i,j].replace("|","rot_")
+                        geometry_file.write(rotname)
                         geometry_file.write("\"/> \n")
                         geometry_file.write("</union> \n")
                         parent_n +=1
@@ -1790,12 +1796,8 @@ for i in range(at_region2):
                     geometry_file.write("_")
                     geometry_file.write(str(parent_n-1))
                     geometry_file.write("\"/> \n")
-                    geometry_file.write("<rotationref ref=\"")
-                    rotname = rvalue[i,j].replace("+","rot_")
-                    geometry_file.write(rotname)
-                    geometry_file.write("\"/> \n")
-                    geometry_file.write("<rotationref ref=\"identity\"/> \n")
                     geometry_file.write("<positionref ref=\"center\"/> \n")
+                    geometry_file.write("<rotationref ref=\"identity\"/> \n")
                     geometry_file.write("</intersection> \n")
                     reg_n +=1
                 elif parent_op == "-" : 
@@ -1822,12 +1824,8 @@ for i in range(at_region2):
                     geometry_file.write("_")
                     geometry_file.write(str(parent_n-1))
                     geometry_file.write("\"/> \n")
-                    geometry_file.write("<rotationref ref=\"")
-                    rotname = rvalue[i,j].replace("+","rot_")
-                    geometry_file.write(rotname)
-                    geometry_file.write("\"/> \n")
-                    geometry_file.write("<rotationref ref=\"identity\"/> \n")
                     geometry_file.write("<positionref ref=\"center\"/> \n")
+                    geometry_file.write("<rotationref ref=\"identity\"/> \n")
                     geometry_file.write("</subtraction> \n")
                     reg_n +=1
 
@@ -1855,12 +1853,8 @@ for i in range(at_region2):
                     geometry_file.write("_")
                     geometry_file.write(str(parent_n-1))
                     geometry_file.write("\"/> \n")
-                    geometry_file.write("<rotationref ref=\"")
-                    rotname = rvalue[i,j].replace("+","rot_")
-                    geometry_file.write(rotname)
-                    geometry_file.write("\"/> \n")
-                    geometry_file.write("<rotationref ref=\"identity\"/> \n")
                     geometry_file.write("<positionref ref=\"center\"/> \n")
+                    geometry_file.write("<rotationref ref=\"identity\"/> \n")
                     geometry_file.write("</union> \n")
                     reg_n +=1
                 pass
@@ -1886,8 +1880,8 @@ for i in range(at_region2):
             geometry_file.write("_0_")
             geometry_file.write(str(reg_n_at_subreg[0]-1))
             geometry_file.write("\"/> \n")           
-            geometry_file.write("<rotationref ref=\"identity\"/> \n")
             geometry_file.write("<positionref ref=\"center\"/> \n")
+            geometry_file.write("<rotationref ref=\"identity\"/> \n")
             geometry_file.write("</intersection> \n")
 
             insertValues = "INSERT INTO region_list values(" + str(region_list_id) + ",\"" + str(rvalue[i,0]) + "\")"    
@@ -1913,8 +1907,8 @@ for i in range(at_region2):
                     geometry_file.write("_")
                     geometry_file.write(str(reg_n_at_subreg[k]-1))
                     geometry_file.write("\"/> \n")           
-                    geometry_file.write("<rotationref ref=\"identity\"/> \n")
                     geometry_file.write("<positionref ref=\"center\"/> \n")
+                    geometry_file.write("<rotationref ref=\"identity\"/> \n")
                     geometry_file.write("</union> \n")
             pass
             at_val = 0
@@ -1951,10 +1945,10 @@ if records != None:
         material_file.write(str(record[1]))
         material_file.write("\" Z=\"")
         material_file.write(str(record[3]))
-        material_file.write("\"> <atom value=\"")
-        material_file.write(str(record[4]))
-        material_file.write("\"/> <D value=\"")
+        material_file.write("\"> <D value=\"")
         material_file.write(str(record[5]))
+        material_file.write("\"/> <atom value=\"")
+        material_file.write(str(record[4]))
         material_file.write("\"/>  </material> \n")
         material_file.write("<element name=\"el_")
         material_file.write(str(record[1]))

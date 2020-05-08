@@ -1,5 +1,5 @@
 {
-  TFile *MyFile = new TFile("hallB_geant4.root","NEW");
+  TFile *MyFile = new TFile("hallB_geant4_simmetric.root","NEW");
   gSystem->Load("libGeom");
   TGeoManager *geo = new TGeoManager("World", "HallB Geant4");
   geo->Import("output.gdml");
