@@ -625,7 +625,7 @@ def importRCC(line):
     geometry_file.write(str(rmax))
     if hzval != 0.0 and hxval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hzval))
+        geometry_file.write(str(abs(hzval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -648,7 +648,7 @@ def importRCC(line):
 
     elif hxval != 0.0 and hzval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hxval))
+        geometry_file.write(str(abs(hxval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -670,7 +670,7 @@ def importRCC(line):
         position_file.write("\" unit=\"deg\"/> \n")
     elif hyval != 0.0 and hzval==0.0 and hxval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hyval))
+        geometry_file.write(str(abs(hyval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -722,7 +722,7 @@ def importRCClong(line1,line2):
     geometry_file.write(str(rmax))
     if hzval != 0.0 and hxval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hzval))
+        geometry_file.write(str(abs(hzval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -744,7 +744,7 @@ def importRCClong(line1,line2):
         position_file.write("\" unit=\"deg\"/> \n")
     elif hxval != 0.0 and hzval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hxval))
+        geometry_file.write(str(abs(hxval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -766,7 +766,7 @@ def importRCClong(line1,line2):
         position_file.write("\" unit=\"deg\"/> \n")
     elif hyval != 0.0 and hzval==0.0 and hxval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hyval))
+        geometry_file.write(str(abs(hyval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -810,7 +810,7 @@ def importTRC(line):
     geometry_file.write(str(rmax2))
     if hzval != 0.0 and hxval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hzval))
+        geometry_file.write(str(abs(hzval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -832,7 +832,7 @@ def importTRC(line):
         position_file.write("\" unit=\"deg\"/> \n")
     elif hxval != 0.0 and hzval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hxval))
+        geometry_file.write(str(abs(hxval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -854,7 +854,7 @@ def importTRC(line):
         position_file.write("\" unit=\"deg\"/> \n")
     elif hyval != 0.0 and hzval==0.0 and hxval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hyval))
+        geometry_file.write(str(abs(hyval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -909,7 +909,7 @@ def importTRClong(line1,line2):
     geometry_file.write(str(rmax2))
     if hzval != 0.0 and hxval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hzval))
+        geometry_file.write(str(abs(hzval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -931,7 +931,7 @@ def importTRClong(line1,line2):
         position_file.write("\" unit=\"deg\"/> \n")
     elif hxval != 0.0 and hzval==0.0 and hyval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hxval))
+        geometry_file.write(str(abs(hxval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
@@ -953,7 +953,7 @@ def importTRClong(line1,line2):
         position_file.write("\" unit=\"deg\"/> \n")
     elif hyval != 0.0 and hzval==0.0 and hxval==0.0:
         geometry_file.write("\" z=\"")
-        geometry_file.write(str(hyval))
+        geometry_file.write(str(abs(hyval)))
         geometry_file.write("\"  deltaphi=\"360\"  startphi=\"0.0\"  aunit=\"deg\"  lunit=\"cm\"/> \n")
         position_file.write("<position name=\"pos_");
         position_file.write(name);
