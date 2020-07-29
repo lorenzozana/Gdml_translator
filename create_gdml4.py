@@ -108,13 +108,37 @@ for line in material_list:
 
 #Now insert in the file and in the database some of the materials defined by default in FLUKA
 #AIR
-material_file.write("<material name=\"mat_AIR\">\n <D value=\".00122210\" />\n  <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n </material>")
+material_file.write("<material name=\"mat_AIR\">\n <D value=\".00122210\" />\n <fraction n=\"0.0001248\" ref=\"el_CARBON\" />\n <fraction n=\"0.755267\" ref=\"el_NITROGEN\" />\n <fraction n=\"0.231781\" ref=\"el_OXYGEN\" />\n <fraction n=\"0.012827\" ref=\"el_ARGON\" />\n </material>")
 #Add AIR to the material list already in the file to not be written and the elements to be written
 insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"AIR\",\"\",\"\",\"\",\"\",0)"    
 cursorObject.execute(insertValues)
 mat_file_id +=1
 mat_list_air = ['CARBON','NITROGEN','OXYGEN','ARGON']
 for mat_name in mat_list_air:
+    query_str = "SELECT * FROM material_infile where Name='" + str(mat_name) + "'"
+    cursorObject.execute(query_str)
+    record = cursorObject.fetchone()
+    #if not present I look for it in the other database and add it.
+    if record == None:
+        query_str = "SELECT * FROM material where Name='" + str(mat_name) + "'"
+        cursorObject.execute(query_str)
+        record2 = cursorObject.fetchone()
+        if record2 == None:
+            print "!!!!!!!!!!! MATERIAL " + str(mat_name) + " NOT PRESENT IN THE DATABASE, PLEASE ADD"
+        else:
+            insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"" + record2[1] + "\",\"" + record2[2] + "\"," + str(record2[3]) + "," + str(record2[4]) + "," + str(record2[5]) + ",1)"
+            cursorObject.execute(insertValues)
+            mat_file_id +=1
+    pass
+
+#WATER
+material_file.write("<material name=\"mat_WATER\">\n <D value=\"1.0\" />\n <composite n=\"2\" ref=\"el_HYDROGEN\" />\n <composite n=\"1\" ref=\"el_OXYGEN\" />\n  </material>")
+#Add AIR to the material list already in the file to not be written and the elements to be written
+insertValues = "INSERT INTO material_infile values(" + str(mat_file_id) + ",\"WATER\",\"\",\"\",\"\",\"\",0)"    
+cursorObject.execute(insertValues)
+mat_file_id +=1
+mat_list_water = ['HYDROGEN','OXYGEN']
+for mat_name in mat_list_water:
     query_str = "SELECT * FROM material_infile where Name='" + str(mat_name) + "'"
     cursorObject.execute(query_str)
     record = cursorObject.fetchone()
