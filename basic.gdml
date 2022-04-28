@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?> 
+ <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd"> 
+ 
+<define>
+<constant name="HALFPI" value="pi/2."/> 
+<position name="center" x="0" y="0" z="0"/> 
+<rotation name="identity" x="0" y="0" z="0" /> 
+<position name="pos_blkbody" x="0.0" y="0.0" z="0.0" /> 
+<rotation name="rot_blkbody" x="0.0" y="0.0" z="0.0" unit="deg"/> 
+<position name="pos_void" x="0.0" y="0.0" z="0.0" /> 
+<rotation name="rot_void" x="0.0" y="0.0" z="0.0" unit="deg"/> 
+<position name="pos_target" x="0.0" y="0.0" z="5.0" /> 
+<rotation name="rot_target" x="0.0" y="0.0" z="0.0" unit="deg"/> 
+</define> 
+
+ 
+<materials> 
+<material name="mat_AIR">
+ <D value=".00122210" />
+ <fraction n="0.0001248" ref="el_CARBON" />
+ <fraction n="0.755267" ref="el_NITROGEN" />
+ <fraction n="0.231781" ref="el_OXYGEN" />
+ <fraction n="0.012827" ref="el_ARGON" />
+ </material><material name="mat_WATER">
+ <D value="1.0" />
+ <composite n="2" ref="el_HYDROGEN" />
+ <composite n="1" ref="el_OXYGEN" />
+  </material><material name="mat_VACUUM">
+ <D value="1.608E-12" />
+ <fraction n="0.0001248" ref="el_CARBON" />
+ <fraction n="0.755267" ref="el_NITROGEN" />
+ <fraction n="0.231781" ref="el_OXYGEN" />
+ <fraction n="0.012827" ref="el_ARGON" />
+ </material><material name="mat_BLCKHOLE">
+  <D value="1.0" />
+ <fraction n="1.0" ref="el_ARGON" />
+ </material><material name="mat_CARBON" Z="6"> <D value="2.267"/> <atom value="12.011"/>  </material> 
+<element name="el_CARBON" formula="C" Z="6"> <atom value="12.011"/> </element> 
+<material name="mat_NITROGEN" Z="7"> <D value="0.0012506"/> <atom value="14.0067"/>  </material> 
+<element name="el_NITROGEN" formula="N" Z="7"> <atom value="14.0067"/> </element> 
+<material name="mat_OXYGEN" Z="8"> <D value="0.001429"/> <atom value="15.9994"/>  </material> 
+<element name="el_OXYGEN" formula="O" Z="8"> <atom value="15.9994"/> </element> 
+<material name="mat_ARGON" Z="18"> <D value="0.0017837"/> <atom value="39.948"/>  </material> 
+<element name="el_ARGON" formula="Ar" Z="18"> <atom value="39.948"/> </element> 
+<material name="mat_HYDROGEN" Z="1"> <D value="8.988e-05"/> <atom value="1.0079"/>  </material> 
+<element name="el_HYDROGEN" formula="H" Z="1"> <atom value="1.0079"/> </element> 
+<material name="mat_COPPER" Z="29"> <D value="8.96"/> <atom value="63.546"/>  </material> 
+<element name="el_COPPER" formula="Cu" Z="29"> <atom value="63.546"/> </element> 
+</materials> 
+
+ 
+<solids> 
+<box name="BoxMother" x="500000" y="500000" z="500000" lunit="cm"/>
+<sphere name="blkbody" rmin="0" rmax="100000.0" deltatheta="180"  deltaphi="360" aunit="deg" lunit="cm"/>
+<sphere name="void" rmin="0" rmax="10000.0" deltatheta="180"  deltaphi="360" aunit="deg" lunit="cm"/>
+<tube name="target" rmin="0.0" rmax="5.0" z="10.0"  deltaphi="360"  startphi="0.0"  aunit="deg"  lunit="cm"/> 
+<intersection name="BLKBODY_0_0"> 
+<first ref="BoxMother"/> 
+<second ref="blkbody"/> 
+<positionref ref="pos_blkbody"/> 
+<rotationref ref="rot_blkbody"/> 
+</intersection> 
+<subtraction name="BLKBODY_0_1"> 
+<first ref="BLKBODY_0_0"/> 
+<second ref="void"/> 
+<positionref ref="pos_void"/> 
+<rotationref ref="rot_void"/> 
+</subtraction> 
+<intersection name="BLKBODY_0"> 
+<first ref="BoxMother"/> 
+<second ref="BLKBODY_0_1"/> 
+<positionref ref="center"/> 
+<rotationref ref="identity"/> 
+</intersection> 
+<intersection name="VOID_0_0"> 
+<first ref="BoxMother"/> 
+<second ref="void"/> 
+<positionref ref="pos_void"/> 
+<rotationref ref="rot_void"/> 
+</intersection> 
+<subtraction name="VOID_0_1"> 
+<first ref="VOID_0_0"/> 
+<second ref="target"/> 
+<positionref ref="pos_target"/> 
+<rotationref ref="rot_target"/> 
+</subtraction> 
+<intersection name="VOID_0"> 
+<first ref="BoxMother"/> 
+<second ref="VOID_0_1"/> 
+<positionref ref="center"/> 
+<rotationref ref="identity"/> 
+</intersection> 
+<intersection name="TARGET_0_0"> 
+<first ref="BoxMother"/> 
+<second ref="target"/> 
+<positionref ref="pos_target"/> 
+<rotationref ref="rot_target"/> 
+</intersection> 
+<intersection name="TARGET_0"> 
+<first ref="BoxMother"/> 
+<second ref="TARGET_0_0"/> 
+<positionref ref="center"/> 
+<rotationref ref="identity"/> 
+</intersection> 
+</solids> 
+<structure> 
+<volume name="vol_BLKBODY"> 
+  <materialref ref="mat_BLCKHOLE"/> 
+  <solidref ref="BLKBODY_0"/> 
+ </volume> 
+<volume name="vol_VOID"> 
+  <materialref ref="mat_VACUUM"/> 
+  <solidref ref="VOID_0"/> 
+ </volume> 
+<volume name="vol_TARGET"> 
+  <materialref ref="mat_COPPER"/> 
+  <solidref ref="TARGET_0"/> 
+ </volume> 
+<volume name="vol_BoxMother"> 
+  <materialref ref="mat_BLCKHOLE"/> 
+  <solidref ref="BoxMother"/> 
+<physvol> 
+  <volumeref ref="vol_BLKBODY"/> 
+  <positionref ref="center"/> 
+  <rotationref ref="identity"/> 
+ </physvol> 
+<physvol> 
+  <volumeref ref="vol_VOID"/> 
+  <positionref ref="center"/> 
+  <rotationref ref="identity"/> 
+ </physvol> 
+<physvol> 
+  <volumeref ref="vol_TARGET"/> 
+  <positionref ref="center"/> 
+  <rotationref ref="identity"/> 
+ </physvol> 
+</volume> 
+</structure> 
+<setup name="Default" version="1.0"> 
+  <world ref="vol_BoxMother"/> 
+</setup> 
+
+ 
+ </gdml> 
